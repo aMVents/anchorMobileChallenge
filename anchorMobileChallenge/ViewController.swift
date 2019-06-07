@@ -11,16 +11,45 @@
 // 4) user has to be able to tap on item to listen to playback
 // 5) if user taps on a song and audio is already playing, then other audio should stop
 // 6) when audio finishes playing, it should go to the next track
+// 7) WRITE SOME TESTS
 
 import UIKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    struct TracksJson: Decodable {
+        let tracks: [Tracks]
+    }
+    
+    struct Tracks: Decodable {
+        let title: String
+        let mediaUrl: String
+        let imageUrl: String
+        let duration: Int
+    }
     
     let dataArray: NSArray = ["First", "Second", "Third"]
     var myTableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        let jsonUrlString = "https://s3-us-west-2.amazonaws.com/anchor-website/challenges/bsb.json"
+        guard let url = URL(string: jsonUrlString) else { return }
+        URLSession.shared.dataTask(with: url) { (data, response, err) in
+            
+            guard let data = data else { return }
+            
+            do {
+                
+                let tracksJson = try JSONDecoder().decode(TracksJson.self, from: data)
+                print(tracksJson.tracks)
+                
+            } catch let jsonErr {
+                print("Error serializing json:", jsonErr)
+            }
+
+            }.resume()
         
         let barHeight: CGFloat = UIApplication.shared.statusBarFrame.size.height
         let displayWidth: CGFloat = self.view.frame.width
