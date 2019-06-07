@@ -16,13 +16,15 @@
 import UIKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    
+
     //MARK : Reading the JSON from a URL
+
     struct TracksJson: Decodable {
         let tracks: [Tracks]
     }
     
     struct Tracks: Decodable {
+
         let title: String?
         let mediaUrl: String?
         let imageUrl: String?
