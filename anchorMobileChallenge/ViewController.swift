@@ -76,7 +76,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     }
         }
         
-        cell.textLabel!.text = "Track: " + tracks[indexPath.row].title
+        cell.textLabel!.text = tracks[indexPath.row].title
         
         return cell
     }
