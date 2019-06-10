@@ -16,29 +16,15 @@
 import UIKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-
-    //MARK : Reading the JSON from a URL
-
-    struct TracksJson: Decodable {
-        let tracks: [Tracks]
-    }
     
-    struct Tracks: Decodable {
-
-        let title: String
-        let mediaUrl: String
-        let imageUrl: String
-        let duration: Int
-    }
-    
-    let dataArray: NSArray = ["First", "Second", "Third"]
+//    let dataArray: NSArray = ["First", "Second", "Third"]
     var myTableView: UITableView!
     private var tracks = [Tracks]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //downloading JSON data
+        //MARK: downloading JSON data
         let jsonUrlString = "https://s3-us-west-2.amazonaws.com/anchor-website/challenges/bsb.json"
         guard let url = URL(string: jsonUrlString) else { return }
         URLSession.shared.dataTask(with: url) { (data, response, err) in
@@ -57,7 +43,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             }
             }.resume()
         
-        //MARK : Displaying the Tableview 
+        //MARK: Displaying the Tableview
         let barHeight: CGFloat = UIApplication.shared.statusBarFrame.size.height
         let displayWidth: CGFloat = self.view.frame.width
         let displayHeight: CGFloat = self.view.frame.height
@@ -80,20 +66,18 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TracksCell", for: indexPath as IndexPath)
+        
 
         if let storedImage = URL(string: tracks[indexPath.row].imageUrl) {
-            DispatchQueue.global().async {
-                let data = try? Data(contentsOf: storedImage)
-                if let data = data {
-                    let image = UIImage(data: data)
-                    DispatchQueue.main.async {
+                    let data = try? Data(contentsOf: storedImage)
+                    if let data = data {
+                        let image = UIImage(data: data)
                         cell.imageView?.image = image
                     }
-                }
-            }
         }
         
-        cell.textLabel!.text = "\(tracks[indexPath.row].title)"
+        cell.textLabel!.text = "Track: " + tracks[indexPath.row].title
+        
         return cell
     }
 }

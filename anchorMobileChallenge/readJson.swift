@@ -1,19 +1,15 @@
+import UIKit
 import Foundation
 
-//struct TracksJson: Decodable {
-//    var tracks = [TracksJson]
-//}
-//
-//struct Tracks {
-//    var title: String
-//    var mediaUrl: String
-//    var imageUrl: String
-//    var duration: Int
-//}
-//
-//func loadJson(filename Filename: String) -> [Tracks]? {
-//
-//    if let url = Bundle.main.url(forResource: "bsb", withExtension: "json") {
-//
-//    }
-//}
+//MARK : Decoding JSON using Codable
+struct TracksJson: Codable {
+    let tracks: [Tracks]
+}
+
+struct Tracks: Codable {
+    
+    let title: String
+    let mediaUrl: String
+    let imageUrl: String
+    let duration: Int
+}
