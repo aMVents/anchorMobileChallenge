@@ -3,7 +3,6 @@
 //  Created by Alwin on 6/6/19.
 //  Copyright © 2019 RS Productions. All rights reserved.
 
-
 //MVP:
 // 1) retrive data from given endpoint URL "https://s3-us-west-2.amazonaws.com/anchor-website/challenges/bsb.json"
 // 2) preset data to user as a list of items as a Table
@@ -12,6 +11,9 @@
 // 5) if user taps on a song and audio is already playing, then other audio should stop
 // 6) when audio finishes playing, it should go to the next track
 // 7) WRITE SOME TESTS
+
+//BUGS:
+// 1) rotating the device does not refresh UITableview
 
 import UIKit
 
@@ -34,6 +36,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 let downloadedTracks = try JSONDecoder().decode(TracksJson.self, from: data)
                 self.tracks = downloadedTracks.tracks
                 DispatchQueue.main.async {
+                    
                     self.myTableView.reloadData()
                 }
                 
@@ -76,7 +79,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     }
         }
         
-        cell.textLabel!.text = tracks[indexPath.row].title
+        if tracks[indexPath.row].mediaUrl.range(of: ".m4v", options: [.regularExpression]) != nil {
+            cell.imageView?.image = nil
+            cell.textLabel?.text = nil
+            print("Found .m4v")
+        } else {
+            cell.textLabel!.text = tracks[indexPath.row].title
+        }
         
         return cell
     }
