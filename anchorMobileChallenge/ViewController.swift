@@ -14,14 +14,20 @@
 
 //BUGS:
 // 1) rotating the device does not refresh UITableview
+// 2) able to tap two cells at the same time
+// 3) incorrect cell activates when tapping
 
 import UIKit
+import AVFoundation
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-//    let dataArray: NSArray = ["First", "Second", "Third"]
     var myTableView: UITableView!
     private var tracks = [Tracks]()
+    var playerLayer : AVPlayerLayer?
+    lazy var audioPlayer: AVQueuePlayer = {
+        return AVQueuePlayer()
+    } ()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +35,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         //MARK: downloading JSON data
         let jsonUrlString = "https://s3-us-west-2.amazonaws.com/anchor-website/challenges/bsb.json"
         guard let url = URL(string: jsonUrlString) else { return }
+        
         URLSession.shared.dataTask(with: url) { (data, response, err) in
             
             guard let data = data else { return }
@@ -36,10 +43,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 let downloadedTracks = try JSONDecoder().decode(TracksJson.self, from: data)
                 self.tracks = downloadedTracks.tracks
                 DispatchQueue.main.async {
-                    
                     self.myTableView.reloadData()
                 }
-                
+                //check to see if JSON data downloaded correctly
                 print(downloadedTracks.tracks)
             } catch let jsonErr {
                 print("Error serializing json:", jsonErr)
@@ -59,9 +65,31 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         myTableView.reloadData()
     }
     
-//    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-//        print("I'm selecting \(indexPath.row)")
+//    func downloadFileFromURL(url: URL) {
+//        var downloadTask: URLSessionDownloadTask
+//        downloadTask = URLSession.shared.downloadTask(with: URL, completionHandler: {[ weak self ] (URL, response, Error) -> Void in
+//            self?.play(url)
+//        })
+//        downloadTask.resume()
 //    }
+    
+    func play(songURL: String) {
+        
+        guard let url = URL.init(string: songURL) else { return }
+        let playerItem = AVPlayerItem.init(url: url)
+        audioPlayer = AVQueuePlayer.init(playerItem: playerItem)
+        
+        let playerLayer = AVPlayerLayer(player: audioPlayer)
+        playerLayer.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
+        
+        audioPlayer.play()
+    }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        
+        play(songURL: tracks[indexPath.row].mediaUrl)
+        print("I'm selecting \(indexPath.row)")
+    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tracks.count
