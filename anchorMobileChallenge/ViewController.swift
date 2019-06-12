@@ -6,7 +6,7 @@
 //MVP:
 // 1) retrive data from given endpoint URL "https://s3-us-west-2.amazonaws.com/anchor-website/challenges/bsb.json"
 // 2) preset data to user as a list of items as a Table
-// 3) each cell should display title and toggle-able play/pause button
+// 3) each cell should display title and toggle-able PLAY/PAUSE button
 // 4) user has to be able to tap on item to listen to playback
 // 5) if user taps on a song and audio is already playing, then other audio should stop
 // 6) when audio finishes playing, it should go to the next track
@@ -14,8 +14,7 @@
 
 //BUGS:
 // 1) rotating the device does not refresh UITableview
-// 2) able to tap two cells at the same time
-// 3) incorrect cell activates when tapping
+
 
 import UIKit
 import AVFoundation
@@ -25,9 +24,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var myTableView: UITableView!
     private var tracks = [Tracks]()
     var playerLayer : AVPlayerLayer?
-    lazy var audioPlayer: AVQueuePlayer = {
-        return AVQueuePlayer()
-    } ()
+    var audioPlayer: AVPlayer?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,28 +62,17 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         myTableView.reloadData()
     }
     
-//    func downloadFileFromURL(url: URL) {
-//        var downloadTask: URLSessionDownloadTask
-//        downloadTask = URLSession.shared.downloadTask(with: URL, completionHandler: {[ weak self ] (URL, response, Error) -> Void in
-//            self?.play(url)
-//        })
-//        downloadTask.resume()
-//    }
-    
     func play(songURL: String) {
         
         guard let url = URL.init(string: songURL) else { return }
         let playerItem = AVPlayerItem.init(url: url)
-        audioPlayer = AVQueuePlayer.init(playerItem: playerItem)
+        audioPlayer = AVPlayer.init(playerItem: playerItem)
         
-        let playerLayer = AVPlayerLayer(player: audioPlayer)
-        playerLayer.frame = CGRect(x: 0, y: 0, width: 10, height: 10)
-        
-        audioPlayer.play()
+        audioPlayer?.play()
     }
     
-    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+
         play(songURL: tracks[indexPath.row].mediaUrl)
         print("I'm selecting \(indexPath.row)")
     }
@@ -98,7 +84,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TracksCell", for: indexPath as IndexPath)
         
-
         if let storedImage = URL(string: tracks[indexPath.row].imageUrl) {
                     let data = try? Data(contentsOf: storedImage)
                     if let data = data {
@@ -118,4 +103,3 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         return cell
     }
 }
-
