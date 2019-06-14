@@ -1,5 +1,4 @@
 //ANCHOR MOBILE CHALLENGE:
-// GOAL: build an app that retrieves a list of audios from a server and present to the user for playback.
 //  Created by Alwin on 6/6/19.
 //  Copyright © 2019 RS Productions. All rights reserved.
 
@@ -15,6 +14,7 @@
 //BUGS:
 // 1) rotating the device does not refresh UITableview
 // 2) tapping on another track while playing will pause the track but will not play the new track that was tapped on
+// 3) able to tap on empty spaces and play m4v files
 
 
 import UIKit
@@ -26,6 +26,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     private var tracks = [Tracks]()
     var playerLayer : AVPlayerLayer?
     var audioPlayer : AVPlayer?
+    var currentRow: Int = 0
+    var savedRow: Int = 0
+    
     
 //    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
 //        super.viewWillTransition(to: size, with: coordinator)
@@ -86,7 +89,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     self.myTableView.reloadData()
                 }
                 //check to see if JSON data downloaded correctly
-                print(downloadedTracks.tracks)
+                print("Download complete")
             } catch let jsonErr {
                 print("Error serializing json:", jsonErr)
             }
@@ -97,11 +100,25 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         guard let url = URL.init(string: songURL) else { return }
         let playerItem = AVPlayerItem.init(url: url)
-        audioPlayer = AVPlayer.init(playerItem: playerItem)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
-        
+
+        if audioPlayer?.timeControlStatus == .playing {
+            audioPlayer?.pause()
+        } else if audioPlayer?.timeControlStatus == .paused {
             audioPlayer?.play()
+        } else {
+            audioPlayer = AVPlayer.init(playerItem: playerItem)
+            audioPlayer?.play()
+        }
+//
+//        NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
+
+    }
+    
+    func newSong(songURL: String) {
+        guard let url = URL.init(string: songURL) else { return }
+        let playerItem = AVPlayerItem.init(url: url)
+        audioPlayer = AVPlayer.init(playerItem: playerItem)
+        audioPlayer?.play()
     }
     
     @objc func playerDidFinishPlaying(sender: Notification) {
@@ -112,21 +129,26 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func pause(songURL: String) {
         guard let url = URL.init(string: songURL) else { return }
         let playerItem = AVPlayerItem.init(url: url)
+        
         audioPlayer = AVPlayer.init(playerItem: playerItem)
         audioPlayer?.pause()
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        if audioPlayer?.timeControlStatus == .playing {
-            audioPlayer?.pause()
-        } else if audioPlayer?.timeControlStatus == .paused {
+        currentRow = indexPath.row
+        
+        if savedRow == indexPath.row { //still on same song
             play(songURL: tracks[indexPath.row].mediaUrl)
-        } else {
-            play(songURL: tracks[indexPath.row].mediaUrl)
+        } else if currentRow != savedRow { //play new song
+            audioPlayer?.replaceCurrentItem(with: nil)
+            newSong(songURL: tracks[indexPath.row].mediaUrl)
+            savedRow = currentRow
         }
         
+        print("Saved Row is \(savedRow)")
         print("I'm selecting \(indexPath.row)")
+        print("Current Row is \(currentRow)")
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
