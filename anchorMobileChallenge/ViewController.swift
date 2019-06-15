@@ -7,15 +7,13 @@
 // 2) DONE - preset data to user as a list of items as a Table
 // 3) each cell should display title and toggle-able PLAY/PAUSE button
 // 4) DONE - user has to be able to tap on item to listen to playback
-// 5) if user taps on a song and audio is already playing, then other audio should stop
+// 5) DONE - xif user taps on a song and audio is already playing, then other audio should stop
 // 6) when audio finishes playing, it should go to the next track
 // 7) WRITE SOME TESTS
 
 //BUGS:
 // 1) rotating the device does not refresh UITableview
-// 2) tapping on another track while playing will pause the track but will not play the new track that was tapped on
 // 3) able to tap on empty spaces and play m4v files
-
 
 import UIKit
 import AVFoundation
@@ -24,12 +22,15 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     var myTableView = UITableView()
     private var tracks = [Tracks]()
-    var playerLayer : AVPlayerLayer?
+    var playerLayer : AVQueuePlayer?
     var audioPlayer : AVPlayer?
     var currentRow: Int = 0
     var savedRow: Int = 0
-    
-    
+    let jsonString = "https://s3-us-west-2.amazonaws.com/anchor-website/challenges/bsb.json"
+    var playImage  = UIImage(named: "play")
+    var pauseImage = UIImage(named: "pause")
+    var imageState = UIImage()
+
 //    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
 //        super.viewWillTransition(to: size, with: coordinator)
 //
@@ -76,12 +77,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func downloadJson() {
         //MARK: downloading JSON data
-        let jsonUrlString = "https://s3-us-west-2.amazonaws.com/anchor-website/challenges/bsb.json"
+        let jsonUrlString = jsonString
         guard let url = URL(string: jsonUrlString) else { return }
         
         URLSession.shared.dataTask(with: url) { (data, response, err) in
             
             guard let data = data else { return }
+            
             do {
                 let downloadedTracks = try JSONDecoder().decode(TracksJson.self, from: data)
                 self.tracks = downloadedTracks.tracks
@@ -89,7 +91,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     self.myTableView.reloadData()
                 }
                 //check to see if JSON data downloaded correctly
-                print("Download complete")
+                print(self.tracks)
             } catch let jsonErr {
                 print("Error serializing json:", jsonErr)
             }
@@ -97,58 +99,65 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     func play(songURL: String) {
-        
         guard let url = URL.init(string: songURL) else { return }
         let playerItem = AVPlayerItem.init(url: url)
 
+        NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
+        
         if audioPlayer?.timeControlStatus == .playing {
             audioPlayer?.pause()
+            imageState = playImage!
         } else if audioPlayer?.timeControlStatus == .paused {
             audioPlayer?.play()
+            imageState = pauseImage!
         } else {
             audioPlayer = AVPlayer.init(playerItem: playerItem)
             audioPlayer?.play()
+            imageState = pauseImage!
         }
-//
-//        NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
-
     }
     
     func newSong(songURL: String) {
         guard let url = URL.init(string: songURL) else { return }
         let playerItem = AVPlayerItem.init(url: url)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
+        
         audioPlayer = AVPlayer.init(playerItem: playerItem)
         audioPlayer?.play()
+        imageState = pauseImage!
+        
     }
     
     @objc func playerDidFinishPlaying(sender: Notification) {
         // play next track
         print("Finished")
-    }
-    
-    func pause(songURL: String) {
-        guard let url = URL.init(string: songURL) else { return }
+        guard let url = URL.init(string: jsonString ) else { return }
         let playerItem = AVPlayerItem.init(url: url)
-        
-        audioPlayer = AVPlayer.init(playerItem: playerItem)
-        audioPlayer?.pause()
+        audioPlayer?.replaceCurrentItem(with: playerItem)
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         currentRow = indexPath.row
-        
-        if savedRow == indexPath.row { //still on same song
-            play(songURL: tracks[indexPath.row].mediaUrl)
-        } else if currentRow != savedRow { //play new song
-            audioPlayer?.replaceCurrentItem(with: nil)
-            newSong(songURL: tracks[indexPath.row].mediaUrl)
-            savedRow = currentRow
-        }
         
         print("Saved Row is \(savedRow)")
         print("I'm selecting \(indexPath.row)")
         print("Current Row is \(currentRow)")
+        
+        let cell = tableView.cellForRow(at: indexPath)
+        
+        if savedRow == indexPath.row { //still on same song
+            play(songURL: tracks[indexPath.row].mediaUrl)
+            cell?.imageView?.image = imageState
+            
+        } else if currentRow != savedRow { //play new song
+            audioPlayer?.replaceCurrentItem(with: nil)
+            newSong(songURL: tracks[indexPath.row].mediaUrl)
+            savedRow = currentRow
+            cell?.imageView?.image = imageState
+        }
+        
+
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -157,16 +166,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TracksCell", for: indexPath as IndexPath)
-        
-        if let storedImage = URL(string: tracks[indexPath.row].imageUrl) {
-                    let data = try? Data(contentsOf: storedImage)
-                    if let data = data {
-                        let image = UIImage(data: data)
-                        cell.imageView?.image = image
-                    }
-        }
-        
-        if tracks[indexPath.row].mediaUrl.range(of: ".m4v", options: [.regularExpression]) != nil {
+       
+        cell.imageView?.image = playImage
+       
+        let filteredArray = tracks[indexPath.row].mediaUrl.range(of: ".m4v", options: [.regularExpression])
+        if filteredArray != nil {
             cell.imageView?.image = nil
             cell.textLabel?.text = nil
             print("Found .m4v")
