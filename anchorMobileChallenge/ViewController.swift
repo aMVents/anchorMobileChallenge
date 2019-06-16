@@ -155,9 +155,15 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             newSong(songURL: tracks[indexPath.row].mediaUrl)
             savedRow = currentRow
             cell?.imageView?.image = imageState
+            
         }
+    }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+       let cell = tableView.cellForRow(at: indexPath)
         
-
+        cell?.imageView?.image = playImage
+  
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
