@@ -135,6 +135,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         guard let url = URL.init(string: jsonString ) else { return }
         let playerItem = AVPlayerItem.init(url: url)
         audioPlayer?.replaceCurrentItem(with: playerItem)
+        imageState = playImage!
+        newSong(songURL: tracks[currentRow + 1].mediaUrl)
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -155,8 +157,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             newSong(songURL: tracks[indexPath.row].mediaUrl)
             savedRow = currentRow
             cell?.imageView?.image = imageState
-            
         }
+        
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
