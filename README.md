@@ -37,3 +37,7 @@ into your solution.
  1) rotating the device does not refresh UITableview
  2) Tracks do not continue playing after finished
  3) able to tap on empty spaces and play m4v files
+ 
+ <b>TEST CASES:</b>
+ 
+ Test cases can be found here: https://docs.google.com/spreadsheets/d/1S8o22c5oxROcWBrRdTyBa6hug2T-W1jwuuTfczwfsiM/edit?usp=sharing
