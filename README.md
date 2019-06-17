@@ -17,6 +17,7 @@ audio should play, and any other audio should stop playing. When an audio finish
 the next in the table should auto-play.
 
 <b>SIDE NOTES:</b>
+
 Don't worry about persistence or caching of the audio. It's ok to download the files from
 scratch each time. Please be as creative as you like while trying to spend no more than a
 couple of hours on the project. If you have thoughts about how you would approach it if you
