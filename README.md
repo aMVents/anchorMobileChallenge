@@ -1,6 +1,6 @@
 # anchorMobileChallenge
 
-OBJECTIVES: 
+<b>OBJECTIVES:</b>  
 
 For this project, we want you to build an app that retrieves a list of audios from a server and
 presents them to the user for playback.
@@ -16,14 +16,14 @@ display the title and a toggle-able play/pause button. When pressing play on a c
 audio should play, and any other audio should stop playing. When an audio finishes playing,
 the next in the table should auto-play.
 
-SIDE NOTES:
+<b>SIDE NOTES:</b>
 Don't worry about persistence or caching of the audio. It's ok to download the files from
 scratch each time. Please be as creative as you like while trying to spend no more than a
 couple of hours on the project. If you have thoughts about how you would approach it if you
 had more time, feel free to share those with us as well, along with any assumptions you built
 into your solution.
 
-MVP:
+<b>MVP:</b>
  1) DONE - retrive data from given endpoint URL "https://s3-us-west-2.amazonaws.com/anchor-website/challenges/bsb.json"
  2) DONE - preset data to user as a list of items as a Table
  3) DONE - each cell should display title and toggle-able PLAY/PAUSE button
@@ -32,7 +32,7 @@ MVP:
  6) when audio finishes playing, it should go to the next track
  7) WRITE SOME TESTS
 
-KNOWN BUGS: 
+<b>KNOWN BUGS:</b> 
  1) rotating the device does not refresh UITableview
  2) Tracks do not continue playing after finished
  3) able to tap on empty spaces and play m4v files
